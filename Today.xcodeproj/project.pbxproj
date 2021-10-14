@@ -15,6 +15,7 @@
 		57FFE12927180882004C8EA1 /* Reminder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57FFE12827180882004C8EA1 /* Reminder.swift */; };
 		57FFE12C27180F26004C8EA1 /* ReminderListCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57FFE12B27180F26004C8EA1 /* ReminderListCell.swift */; };
 		57FFE12E27181A9E004C8EA1 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 57FFE12D27181A9E004C8EA1 /* Main.storyboard */; };
+		57FFE13127181ED0004C8EA1 /* ReminderDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57FFE13027181ED0004C8EA1 /* ReminderDetailViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -28,6 +29,7 @@
 		57FFE12827180882004C8EA1 /* Reminder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Reminder.swift; sourceTree = "<group>"; };
 		57FFE12B27180F26004C8EA1 /* ReminderListCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReminderListCell.swift; sourceTree = "<group>"; };
 		57FFE12D27181A9E004C8EA1 /* Main.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = Main.storyboard; sourceTree = "<group>"; };
+		57FFE13027181ED0004C8EA1 /* ReminderDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReminderDetailViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -60,11 +62,11 @@
 		5701C28427171BF400D2A691 /* Today */ = {
 			isa = PBXGroup;
 			children = (
+				57FFE12F27181EBC004C8EA1 /* ViewControllers */,
 				57FFE12A27180F0E004C8EA1 /* Views */,
 				57FFE1272718086E004C8EA1 /* Models */,
 				5701C28527171BF400D2A691 /* AppDelegate.swift */,
 				5701C28727171BF400D2A691 /* SceneDelegate.swift */,
-				5701C28927171BF400D2A691 /* ReminderListViewController.swift */,
 				57FFE12D27181A9E004C8EA1 /* Main.storyboard */,
 				5701C28E27171BF700D2A691 /* Assets.xcassets */,
 				5701C29027171BF700D2A691 /* LaunchScreen.storyboard */,
@@ -87,6 +89,15 @@
 				57FFE12B27180F26004C8EA1 /* ReminderListCell.swift */,
 			);
 			path = Views;
+			sourceTree = "<group>";
+		};
+		57FFE12F27181EBC004C8EA1 /* ViewControllers */ = {
+			isa = PBXGroup;
+			children = (
+				5701C28927171BF400D2A691 /* ReminderListViewController.swift */,
+				57FFE13027181ED0004C8EA1 /* ReminderDetailViewController.swift */,
+			);
+			path = ViewControllers;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -163,6 +174,7 @@
 				5701C28A27171BF400D2A691 /* ReminderListViewController.swift in Sources */,
 				57FFE12C27180F26004C8EA1 /* ReminderListCell.swift in Sources */,
 				5701C28627171BF400D2A691 /* AppDelegate.swift in Sources */,
+				57FFE13127181ED0004C8EA1 /* ReminderDetailViewController.swift in Sources */,
 				5701C28827171BF400D2A691 /* SceneDelegate.swift in Sources */,
 				57FFE12927180882004C8EA1 /* Reminder.swift in Sources */,
 			);
