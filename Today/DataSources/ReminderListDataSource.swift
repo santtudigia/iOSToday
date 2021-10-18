@@ -9,6 +9,15 @@ import UIKit
 
 class ReminderListDataSource: NSObject {
     private lazy var dateFormatter = RelativeDateTimeFormatter()
+    
+    
+    func update(_ reminder: Reminder, at row: Int) {
+        Reminder.testData[row] = reminder
+    }
+    
+    func reminder(at row: Int) -> Reminder {
+        return Reminder.testData[row]
+    }
 }
 
 extension ReminderListDataSource: UITableViewDataSource {
@@ -24,7 +33,7 @@ extension ReminderListDataSource: UITableViewDataSource {
             fatalError("Unable to dequeue ReminderCell")
         }
         
-        let reminder = Reminder.testData[indexPath.row]
+        let reminder = reminder(at: indexPath.row)
         let dateText = dateFormatter.localizedString(for: reminder.dueDate, relativeTo: Date())
         cell.configure(title: reminder.title, dateText: dateText, isDone: reminder.isComplete) {
             Reminder.testData[indexPath.row].isComplete.toggle()
