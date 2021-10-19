@@ -44,6 +44,30 @@ class ReminderListViewController: UITableViewController {
         progressContainerView.layer.masksToBounds = true
         self.refreshProgressView()
         self.refreshBackground()
+        
+        if #available(iOS 13.0, *) {
+            
+            guard let navigationBar = self.navigationController?.navigationBar else {
+                return
+            }
+            guard let toolBar = self.navigationController?.toolbar else {
+                return
+            }
+            
+            let navBarAppearance = UINavigationBarAppearance()
+            navBarAppearance.configureWithTransparentBackground()
+            navBarAppearance.titleTextAttributes = [.foregroundColor: UIColor.white]
+            navBarAppearance.largeTitleTextAttributes = [.foregroundColor: UIColor.white]
+            navBarAppearance.backgroundColor = UIColor.clear
+            navigationBar.standardAppearance = navBarAppearance
+            navigationBar.scrollEdgeAppearance = navBarAppearance
+            
+            let toolbarAppearance = UIToolbarAppearance()
+            toolbarAppearance.configureWithTransparentBackground()
+            toolbarAppearance.backgroundColor = UIColor.white
+            toolBar.standardAppearance = toolbarAppearance
+            toolBar.scrollEdgeAppearance = toolbarAppearance
+        }
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
