@@ -24,17 +24,16 @@
                                     <subviews>
                                         <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="jMf-H1-ANf" userLabel="Percent Complete View">
                                             <rect key="frame" x="0.0" y="144" width="290" height="146"/>
-                                            <color key="backgroundColor" systemColor="systemTealColor"/>
+                                            <color key="backgroundColor" systemColor="systemOrangeColor"/>
                                             <constraints>
                                                 <constraint firstAttribute="height" constant="146" id="9cE-Tf-Xgg"/>
                                             </constraints>
                                         </view>
                                         <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="t1d-xy-5tt" userLabel="Percent Incomplete View">
                                             <rect key="frame" x="0.0" y="0.0" width="290" height="144"/>
-                                            <color key="backgroundColor" systemColor="systemIndigoColor"/>
+                                            <color key="backgroundColor" red="1" green="0.78516993646296551" blue="0.0021390398825618107" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         </view>
                                     </subviews>
-                                    <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                                     <constraints>
                                         <constraint firstAttribute="trailing" secondItem="jMf-H1-ANf" secondAttribute="trailing" id="GAA-8G-uw6"/>
                                         <constraint firstAttribute="bottom" secondItem="jMf-H1-ANf" secondAttribute="bottom" id="QeH-7N-T5d"/>
@@ -47,7 +46,6 @@
                                     </constraints>
                                 </view>
                             </subviews>
-                            <color key="backgroundColor" systemColor="systemGreenColor"/>
                             <constraints>
                                 <constraint firstItem="OZE-Nw-Qie" firstAttribute="centerX" secondItem="UPx-2t-vVt" secondAttribute="centerX" id="0Vr-A4-LPC"/>
                                 <constraint firstItem="OZE-Nw-Qie" firstAttribute="centerY" secondItem="UPx-2t-vVt" secondAttribute="centerY" id="2XM-NX-hcH"/>
@@ -68,6 +66,7 @@
                                                 <constraint firstAttribute="width" secondItem="JWm-ug-oHM" secondAttribute="height" multiplier="1:1" id="GgG-k3-jVZ"/>
                                                 <constraint firstAttribute="width" constant="44" id="fbm-uU-JAC"/>
                                             </constraints>
+                                            <color key="tintColor" systemColor="systemOrangeColor"/>
                                             <state key="normal" backgroundImage="circle" catalog="system"/>
                                             <connections>
                                                 <action selector="doneButtonTriggered:" destination="A8L-pi-gbx" eventType="touchUpInside" id="Vxv-z6-dnA"/>
@@ -98,6 +97,7 @@
                                         <constraint firstItem="nNJ-hf-kDU" firstAttribute="top" secondItem="KkO-xv-WN9" secondAttribute="bottom" constant="8" symbolic="YES" id="wrC-Ce-IuV"/>
                                     </constraints>
                                 </tableViewCellContentView>
+                                <color key="backgroundColor" systemColor="systemGray6Color"/>
                                 <connections>
                                     <outlet property="dateLabel" destination="nNJ-hf-kDU" id="oyI-3l-cL4"/>
                                     <outlet property="doneButton" destination="JWm-ug-oHM" id="lOb-ZT-i4i"/>
@@ -113,6 +113,7 @@
                     </tableView>
                     <toolbarItems>
                         <barButtonItem title="Add" image="plus" catalog="system" id="SDa-aW-SX4">
+                            <color key="tintColor" systemColor="systemOrangeColor"/>
                             <connections>
                                 <action selector="addButtonPressed:" destination="BGH-XA-vmv" id="GVA-aR-YdV"/>
                             </connections>
@@ -154,11 +155,13 @@
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="boH-8Y-VXu">
                         <rect key="frame" x="0.0" y="44" width="414" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
+                        <color key="tintColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                     </navigationBar>
                     <nil name="viewControllers"/>
                     <toolbar key="toolbar" opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="vIn-M5-59V">
                         <rect key="frame" x="0.0" y="813" width="414" height="49"/>
                         <autoresizingMask key="autoresizingMask"/>
+                        <color key="tintColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                     </toolbar>
                     <connections>
                         <segue destination="BGH-XA-vmv" kind="relationship" relationship="rootViewController" id="Gkj-Ui-nMS"/>
@@ -289,14 +292,11 @@
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>
-        <systemColor name="systemGreenColor">
-            <color red="0.20392156862745098" green="0.7803921568627451" blue="0.34901960784313724" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        <systemColor name="systemGray6Color">
+            <color red="0.94901960784313721" green="0.94901960784313721" blue="0.96862745098039216" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
-        <systemColor name="systemIndigoColor">
-            <color red="0.34509803921568627" green="0.33725490196078434" blue="0.83921568627450982" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-        </systemColor>
-        <systemColor name="systemTealColor">
-            <color red="0.18823529411764706" green="0.69019607843137254" blue="0.7803921568627451" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+        <systemColor name="systemOrangeColor">
+            <color red="1" green="0.58431372549019611" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
         </systemColor>
     </resources>
 </document>
