@@ -30,8 +30,14 @@ class ReminderListViewController: UITableViewController {
         reminderListDataSource = ReminderListDataSource(reminderCompletedAction: { reminderIndex in
             self.tableView.reloadRows(at: [IndexPath(row: reminderIndex, section: 0)], with: .automatic)
             self.refreshProgressView()
+
         }, reminderDeletedAction: {
             self.refreshProgressView()
+        }, remindersChangedAction: {
+            DispatchQueue.main.sync {
+                self.tableView.reloadData()
+                self.refreshProgressView()
+            }
         })
         tableView.dataSource = reminderListDataSource
     }
@@ -81,9 +87,14 @@ class ReminderListViewController: UITableViewController {
              }
             
             destination.configure(with: reminder, isNew: false, editAction: { reminder in
-                self.reminderListDataSource?.update(reminder, at: rowIndex)
-                self.tableView.reloadData()
-                self.refreshProgressView()
+                self.reminderListDataSource?.update(reminder, at: rowIndex) { success in
+                    if success {
+                        DispatchQueue.main.async {
+                            self.tableView.reloadData()
+                            self.refreshProgressView()
+                        }
+                    }
+                }
             })
         }
     }
@@ -98,10 +109,14 @@ class ReminderListViewController: UITableViewController {
         let reminder = Reminder(id: UUID().uuidString, title: "New Reminder", dueDate: Date())
 
         detailViewController.configure(with: reminder, isNew: true, addAction: { reminder in
-            if let index = self.reminderListDataSource?.add(reminder) {
-                self.tableView.insertRows(at: [IndexPath(row: index, section: 0)], with: .automatic)
-                self.refreshProgressView()
-            }
+            self.reminderListDataSource?.add(reminder, completion: { (index) in
+                if let index = index {
+                    DispatchQueue.main.async {
+                        self.tableView.insertRows(at: [IndexPath(row: index, section: 0)], with: .automatic)
+                        self.refreshProgressView()
+                    }
+                }
+            })
         })
 
         let navigationController = UINavigationController(rootViewController: detailViewController)

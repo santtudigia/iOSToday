@@ -6,10 +6,12 @@
 //
 
 import UIKit
+import EventKit
 
 class ReminderListDataSource: NSObject {
     typealias ReminderCompletedAction = (Int) -> Void
     typealias ReminderDeletedAction = () -> Void
+    typealias RemindersChangedAction = () -> Void
     
     private lazy var dateFormatter = RelativeDateTimeFormatter()
     
@@ -32,12 +34,29 @@ class ReminderListDataSource: NSObject {
         }
     }
     
+    private let eventStore = EKEventStore()
+    
+    private var reminders: [Reminder] = []
     private var reminderCompletedAction: ReminderCompletedAction?
     private var reminderDeletedAction: ReminderDeletedAction?
-    init(reminderCompletedAction: @escaping ReminderCompletedAction, reminderDeletedAction: @escaping ReminderDeletedAction) {
+    private var remindersChangedAction: RemindersChangedAction?
+    init(reminderCompletedAction: @escaping ReminderCompletedAction, reminderDeletedAction: @escaping ReminderDeletedAction,
+        remindersChangedAction: @escaping RemindersChangedAction) {
         self.reminderCompletedAction = reminderCompletedAction
         self.reminderDeletedAction = reminderDeletedAction
+        self.remindersChangedAction = remindersChangedAction
         super.init()
+        
+        requestAccess { (authorized) in
+            if authorized {
+                self.readAllReminders()
+                NotificationCenter.default.addObserver(self, selector: #selector(self.storeChanged(_:)), name: .EKEventStoreChanged, object: self.eventStore)
+            }
+        }
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self, name: .EKEventStoreChanged, object: self.eventStore)
     }
 
 
@@ -45,7 +64,7 @@ class ReminderListDataSource: NSObject {
     var filter: Filter = .today
     
     var filteredReminders : [Reminder] {
-        return Reminder.testData.filter { reminder in filter.shouldInclude(date: reminder.dueDate) }.sorted { reminder1, reminder2 in
+        return reminders.filter { reminder in filter.shouldInclude(date: reminder.dueDate) }.sorted { reminder1, reminder2 in
             reminder1.dueDate < reminder2.dueDate
         }
     }
@@ -62,28 +81,66 @@ class ReminderListDataSource: NSObject {
     
     func index(for filteredIndex: Int) -> Int {
         let filteredReminder = filteredReminders[filteredIndex]
-        guard let index = Reminder.testData.firstIndex(where: { $0.id == filteredReminder.id }) else {
+        guard let index = reminders.firstIndex(where: { $0.id == filteredReminder.id }) else {
             fatalError("Couldn't retrieve index in source array")
         }
         return index
 
     }
     
-    func update(_ reminder: Reminder, at row: Int) {
-        Reminder.testData[index(for: row)] = reminder
+    func update(_ reminder: Reminder, at row: Int, completion: (Bool) -> Void) {
+        saveReminder(reminder) { (id) in
+            let success = id != nil
+            if success {
+                let index = self.index(for: row)
+                reminders[index] = reminder
+            }
+            completion(success)
+        }
     }
     
     func reminder(at row: Int) -> Reminder {
         return filteredReminders[row]
     }
     
-    func add(_ reminder: Reminder) -> Int? {
-        Reminder.testData.insert(reminder, at: 0)
-        return filteredReminders.firstIndex(where: { $0.id == reminder.id })
+    func add(_ reminder: Reminder, completion: (Int?) -> Void) {
+        saveReminder(reminder) { (id) in
+            if let id = id {
+                let reminder = Reminder(id: id,
+                                        title: reminder.title,
+                                        dueDate: reminder.dueDate,
+                                        notes: reminder.notes,
+                                        isComplete: reminder.isComplete)
+                reminders.insert(reminder, at: 0)
+                
+                let index = filteredReminders.firstIndex { $0.id == id }
+                completion(index)
+            } else {
+                completion(nil)
+            }
+        }
     }
     
-    func delete(at row: Int) {
-        Reminder.testData.remove(at: index(for: row))
+    func delete(at row: Int, completion: (Bool) -> Void) {
+        let index = self.index(for: row)
+        let reminder = reminders[index]
+        
+        deleteReminder(with: reminder.id, completion: { success in
+            if success {
+                reminders.remove(at: index)
+            }
+            completion(success)
+        })
+    }
+    
+    @objc
+    func storeChanged(_ notification: NSNotification) {
+        requestAccess { authorized in
+            if authorized {
+                self.readAllReminders()
+            }
+            
+        }
     }
 }
 
@@ -100,14 +157,20 @@ extension ReminderListDataSource: UITableViewDataSource {
             fatalError("Unable to dequeue ReminderCell")
         }
         
-        let reminder = reminder(at: indexPath.row)
-        let dateText = reminder.dueDateTimeText(for: filter)
-        cell.configure(title: reminder.title, dateText: dateText, isDone: reminder.isComplete) {
-            Reminder.testData[indexPath.row].isComplete.toggle()
-            tableView.reloadRows(at: [indexPath], with: .none)
-            self.reminderCompletedAction?(indexPath.row)
-        }
+        let currentReminder = reminder(at: indexPath.row)
+        let dateText = currentReminder.dueDateTimeText(for: filter)
+
         
+        cell.configure(title: currentReminder.title, dateText: dateText, isDone: currentReminder.isComplete) {
+            var modifiedReminder = currentReminder
+            modifiedReminder.isComplete.toggle()
+            self.update(modifiedReminder, at: indexPath.row) { success in
+                if success {
+                    self.reminderCompletedAction?(indexPath.row)
+                }
+            }
+        }
+
         return cell
     }
     
@@ -117,14 +180,19 @@ extension ReminderListDataSource: UITableViewDataSource {
             return
         }
 
-        delete(at: indexPath.row)
-        tableView.performBatchUpdates({
-            tableView.deleteRows(at: [indexPath], with: .automatic)
-        }) { (_) in
-            tableView.reloadData()
+        delete(at: indexPath.row) { success in
+            if success {
+                DispatchQueue.main.async {
+                    tableView.performBatchUpdates({
+                        tableView.deleteRows(at: [indexPath], with: .automatic)
+                    }) { (_) in
+                        tableView.reloadData()
+                    }
+                }
+                
+                reminderDeletedAction?()
+            }
         }
-        
-        reminderDeletedAction?()
     }
 }
 
@@ -171,4 +239,118 @@ extension Reminder {
     }
 }
 
+extension ReminderListDataSource {
+    private var isEventsAvailable: Bool {
+        EKEventStore.authorizationStatus(for: .reminder) == .authorized
+    }
+    
+    func requestAccess(completion: @escaping (Bool) -> Void) {
+        let currentStatus = EKEventStore.authorizationStatus(for: .reminder)
+        
+        guard currentStatus == .notDetermined else {
+            completion(currentStatus == .authorized)
+            return
+        }
+        
+        eventStore.requestAccess(to: .reminder) { (success, error) in
+            completion(success)
+        }
+    }
+    
+    private func readAllReminders() {
+        guard isEventsAvailable else { return }
+        
+        let predicate = eventStore.predicateForReminders(in: nil)
+        eventStore.fetchReminders(matching: predicate, completion: { (reminders) in
+            guard let reminders = reminders else {
+                self.reminders = []
+                return
+            }
+                
+            self.reminders = reminders.compactMap {
+                guard let dueDate = $0.alarms?.first?.absoluteDate else {
+                    return nil
+                }
+                    
+                let reminder = Reminder(
+                    id: $0.calendarItemIdentifier,
+                    title: $0.title,
+                    dueDate: dueDate,
+                    notes: $0.notes,
+                    isComplete: $0.isCompleted
+                )
+                    
+                return reminder
+            }
+            self.remindersChangedAction?()
+        })
+    }
+    
+    private func readReminder(with id: String, completion: (EKReminder?) -> Void) {
+        guard isEventsAvailable else {
+            completion(nil)
+            return
+        }
+        
+        guard let calendarItem = eventStore.calendarItem(withIdentifier: id),
+              let ekReminder = calendarItem as? EKReminder else {
+                  completion(nil)
+                  return
+              }
+        
+        completion(ekReminder)
+    }
+    
+    private func saveReminder(_ reminder: Reminder, completion: (String?) -> Void) {
+        guard isEventsAvailable else {
+            completion(nil)
+            return
+        }
+        
+        readReminder(with: reminder.id, completion: { (ekReminder) in
+            let ekReminder = ekReminder ?? EKReminder(eventStore: self.eventStore)
+            ekReminder.title = reminder.title
+            ekReminder.notes = reminder.notes
+            ekReminder.isCompleted = reminder.isComplete
+            ekReminder.calendar = self.eventStore.defaultCalendarForNewReminders()
+            ekReminder.alarms?.forEach { alarm in
 
+                if let absoluteDate = alarm.absoluteDate {
+                    let comparison = Locale.current.calendar.compare(reminder.dueDate, to: absoluteDate, toGranularity: .minute)
+                    if comparison != .orderedSame {
+                        ekReminder.removeAlarm(alarm)
+                    }
+                }
+            }
+            
+            if !ekReminder.hasAlarms {
+                ekReminder.addAlarm(EKAlarm(absoluteDate: reminder.dueDate))
+            }
+            
+            do {
+                try self.eventStore.save(ekReminder, commit: true)
+                completion(ekReminder.calendarItemIdentifier)
+            } catch {
+                completion(nil)
+            }
+        })
+    }
+    
+    private func deleteReminder(with id : String, completion: (Bool) -> Void) {
+        guard isEventsAvailable else {
+            completion(false)
+            return
+        }
+        
+        readReminder(with: id, completion: { (ekReminder) in
+            if let ekReminder = ekReminder {
+                do {
+                    try self.eventStore.remove(ekReminder, commit: true)
+                    completion(true)
+                } catch {
+                    completion(false)
+                }
+            }
+        })
+    }
+}
