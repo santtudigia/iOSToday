@@ -93,12 +93,30 @@ class ReminderListViewController: UITableViewController {
                             self.tableView.reloadData()
                             self.refreshProgressView()
                         }
+                    } else {
+                        self.displayErrorMessage()
                     }
                 }
             })
         }
     }
 
+    private func displayErrorMessage() {
+        DispatchQueue.main.async {
+
+            let alertTitle = NSLocalizedString("Can't Update Reminder", comment: "error updating reminder title")
+            let alertMessage = NSLocalizedString("An error occured while attempting to update the reminder.", comment: "error updating reminder message")
+            
+            let alert = UIAlertController(title: alertTitle, message: alertMessage, preferredStyle: .alert)
+            let actionTitle = NSLocalizedString("OK", comment: "ok action title")
+
+            alert.addAction(UIAlertAction(title: actionTitle, style: .default, handler: { _ in
+                self.dismiss(animated: true, completion: nil)
+            }))
+            self.present(alert, animated: true, completion: nil)
+        }
+    }
+    
     @IBAction func addButtonPressed(_ sender: Any) {
         addReminder()
     }
@@ -115,6 +133,8 @@ class ReminderListViewController: UITableViewController {
                         self.tableView.insertRows(at: [IndexPath(row: index, section: 0)], with: .automatic)
                         self.refreshProgressView()
                     }
+                } else {
+                    self.displayErrorMessage()
                 }
             })
         })
